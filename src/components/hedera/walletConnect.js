@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-const network = "previewnet";
+const network = "testnet";
 
 async function walletConnectFcn() {
 	console.log(`\n=======================================`);
@@ -9,12 +9,21 @@ async function walletConnectFcn() {
 
 	// SWITCH TO HEDERA TEST NETWORK
 	console.log(`- Switching network to the Hedera ${network}...🟠`);
+	let chainId;
+	if (network === "testnet") {
+		chainId = "0x128";
+	} else if (network === "previewnet") {
+		chainId = "0x129";
+	} else {
+		chainId = "0x127";
+	}
+
 	await window.ethereum.request({
 		method: "wallet_addEthereumChain",
 		params: [
 			{
 				chainName: `Hedera ${network}`,
-				chainId: "0x129",
+				chainId: chainId,
 				nativeCurrency: { name: "HBAR", symbol: "ℏℏ", decimals: 18 },
 				rpcUrls: [`https://${network}.hashio.io/api`],
 				blockExplorerUrls: [`https://hashscan.io/${network}/`],
