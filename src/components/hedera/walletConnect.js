@@ -8,24 +8,20 @@ async function walletConnectFcn() {
 	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
 	// SWITCH TO HEDERA TEST NETWORK
-	try {
-		console.log(`- Switching network to the Hedera ${network}...🟠`);
-		await window.ethereum.request({
-			method: "wallet_addEthereumChain",
-			params: [
-				{
-					chainName: `Hedera ${network}`,
-					chainId: "0x129",
-					nativeCurrency: { name: "HBAR", symbol: "ℏℏ", decimals: 18 },
-					rpcUrls: [`https://${network}.hashio.io/api`],
-					blockExplorerUrls: [`https://hashscan.io/${network}/`],
-				},
-			],
-		});
-		console.log("- Switched ✅");
-	} catch (switchError) {
-		console.log(`- ${switchError.message.toString()}`);
-	}
+	console.log(`- Switching network to the Hedera ${network}...🟠`);
+	await window.ethereum.request({
+		method: "wallet_addEthereumChain",
+		params: [
+			{
+				chainName: `Hedera ${network}`,
+				chainId: "0x129",
+				nativeCurrency: { name: "HBAR", symbol: "ℏℏ", decimals: 18 },
+				rpcUrls: [`https://${network}.hashio.io/api`],
+				blockExplorerUrls: [`https://hashscan.io/${network}/`],
+			},
+		],
+	});
+	console.log("- Switched ✅");
 
 	// // CONNECT TO ACCOUNT
 	console.log("- Connecting wallet...🟠");
