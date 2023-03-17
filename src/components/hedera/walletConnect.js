@@ -1,43 +1,47 @@
 import { ethers } from "ethers";
-import detectEthereumProvider from "@metamask/detect-provider";
+const network = "previewnet";
 
 async function walletConnectFcn() {
 	console.log(`\n=======================================`);
-	console.log("- Connecting wallet...");
 
-	let selectedAccount;
-	const provider = await detectEthereumProvider();
+	// ETHERS PROVIDER
+	const provider = new ethers.providers.Web3Provider(window.ethereum, "any");
 
-	provider
-		.request({ method: "eth_requestAccounts" })
-		.then((accounts) => {
-			selectedAccount = accounts[0];
-			console.log(`Selected account is ${selectedAccount}`);
-		})
-		.catch((err) => {
-			console.log(err);
-			return;
-		});
-
+	// SWITCH TO HEDERA TEST NETWORK
 	try {
-		await provider.request({
+		console.log(`- Switching network to the Hedera ${network}...🟠`);
+		await window.ethereum.request({
 			method: "wallet_addEthereumChain",
 			params: [
 				{
-					chainName: "Hedera Testnet",
-					chainId: "0x128",
-					nativeCurrency: { name: "HBAR", symbol: "ℏ", decimals: 18 },
-					rpcUrls: ["https://testnet.hashio.io/api"],
+					chainName: `Hedera ${network}`,
+					chainId: "0x129",
+					nativeCurrency: { name: "HBAR", symbol: "ℏℏ", decimals: 18 },
+					rpcUrls: [`https://${network}.hashio.io/api`],
+					blockExplorerUrls: [`https://hashscan.io/${network}/`],
 				},
 			],
 		});
-		console.log("You have switched to the right network");
+		console.log("- Switched ✅");
 	} catch (switchError) {
-		// The network has not been added to MetaMask
-		console.log("Cannot switch to the network");
+		console.log(`- ${switchError.message.toString()}`);
 	}
 
-	return selectedAccount;
+	// // CONNECT TO ACCOUNT
+	console.log("- Connecting wallet...🟠");
+	let selectedAccount;
+	await provider
+		.send("eth_requestAccounts", [])
+		.then((accounts) => {
+			selectedAccount = accounts[0];
+			console.log(`- Selected account: ${selectedAccount} ✅`);
+		})
+		.catch((connectError) => {
+			console.log(`- ${connectError.message.toString()}`);
+			return;
+		});
+
+	return [selectedAccount, provider, network];
 }
 
 export default walletConnectFcn;

@@ -1,15 +1,54 @@
-import { ContractFunctionParameters, ContractExecuteTransaction } from "@hashgraph/sdk";
+import abi from "../../contracts/abi.js";
+import axios from "axios";
+import { ethers } from "ethers";
 
-async function contractExecuteFcn(walletData, accountId, tokenId, contractId) {
+const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+async function contractExecuteFcn(walletData, contractAddress) {
 	console.log(`\n=======================================`);
-	console.log(`- Executing the smart contract...`);
+	console.log(`- Executing the smart contract...🟠`);
 
-	const hashconnect = walletData[0];
-	const saveData = walletData[1];
-	const provider = hashconnect.getProvider("testnet", saveData.topic, accountId);
-	const signer = hashconnect.getSigner(provider);
+	// ETHERS PROVIDER AND SIGNER
+	const provider = walletData[1];
+	const signer = provider.getSigner();
 
-	//Execute a contract function (transfer)
+	// EXECUTE THE SMART CONTRACT
+	let txBlockHash;
+	let finalCount;
+	try {
+		// CHECK SMART CONTRACT STATE
+		const initialCount = await getCountState();
+		console.log(`- Initial count: ${initialCount}`);
+
+		// EXECUTE CONTRACT FUNCTION
+		const myContract = new ethers.Contract(contractAddress, abi, signer);
+		const incrementTx = await myContract.increment();
+		const incrementRx = await incrementTx.wait();
+		txBlockHash = incrementRx.blockHash;
+
+		// CHECK SMART CONTRACT STATE AGAIN
+		await delay(5000); // DELAY TO ALLOW MIRROR NODES TO UPDATE BEFORE QUERYING
+		finalCount = await getCountState();
+		console.log(`- Final count: ${finalCount}`);
+		console.log(`- Contract executed. Here's the block hash: \n${txBlockHash} ✅`);
+	} catch (executeError) {
+		console.log(`- ${executeError.message.toString()}`);
+	}
+
+	return [txBlockHash, finalCount];
+
+	async function getCountState() {
+		let countDec;
+		const countInfo = await axios.get(`https://${walletData[2]}.mirrornode.hedera.com/api/v1/contracts/${contractAddress}/state`);
+
+		if (countInfo.data.state[0] !== undefined) {
+			const countHex = countInfo.data.state[0].value;
+			countDec = parseInt(countHex, 16);
+		} else {
+			countDec = 0;
+		}
+		return countDec;
+	}
 }
 
 export default contractExecuteFcn;
