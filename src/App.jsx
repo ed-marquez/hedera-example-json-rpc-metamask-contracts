@@ -52,13 +52,9 @@ function App() {
 	async function tokenAssociate() {
 		if (account === undefined || tokenAddressIn === undefined) {
 			setExecuteTextSt("🛑Connect a wallet AND enter a valid token address!🛑");
-		}
-		//
-		else if (!tokenAddressIn.startsWith("0x")) {
+		} else if (!tokenAddressIn.startsWith("0x")) {
 			setExecuteTextSt("🛑Enter a valid token address (0x...)🛑");
-		}
-		//
-		else {
+		} else {
 			setExecuteTextSt(`Associating to Token: ${tokenAddressIn}`);
 
 			const newContractAddress = await contractDeployFcn(walletData, tokenAddressIn);
@@ -81,7 +77,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<h1 className="header">Let's buidl a counter dapp with MetaMask and Hedera!</h1>
+			<h1 className="header">Associate your Hedera account with native tokens using MetaMask!</h1>
 
 			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
 
