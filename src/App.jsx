@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import MyGroup from "./components/MyGroup.jsx";
-import MyButton from "./components/MyButton.jsx";
+import MyInput from "./components/MyInput.jsx";
 import walletConnectFcn from "./components/hedera/walletConnect.js";
-import contractDeployFcn from "./components/hedera/contractDeploy.js";
-import contractExecuteFcn from "./components/hedera/contractExecute.js";
 import tokenAssociateFcn from "./components/hedera/tokenAssociate.js";
 import "./styles/App.css";
 
@@ -14,7 +12,7 @@ function App() {
 
 	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
 	const [contractTextSt, setContractTextSt] = useState();
-	const [executeTextSt, setExecuteTextSt] = useState();
+	const [executeTextSt, setExecuteTextSt] = useState("Enter a Token Address to Associate");
 
 	const [connectLinkSt, setConnectLinkSt] = useState("");
 	const [contractLinkSt, setContractLinkSt] = useState();
@@ -70,49 +68,46 @@ function App() {
 	//=====================
 	const [inputValue, setInputValue] = useState("");
 	const [displayText, setDisplayText] = useState("");
+	const [displayLinkSt, setDisplayLinkSt] = useState("");
 
 	async function tokenAssociate() {
-		const txt = `You entered: ${inputValue}`;
-		setDisplayText(txt);
-		console.log(txt);
+		if (inputValue !== undefined) {
+			const txt = `Associating to Token: ${inputValue}`;
+			setDisplayText(txt);
 
-		const txBlockHash2 = await tokenAssociateFcn(walletData, inputValue);
+			const [txBlockHash2, outText] = await tokenAssociateFcn(walletData, inputValue);
+			setExecuteTextSt(outText);
+			setDisplayText(`Transaction included in block ${txBlockHash2} ✅`);
+			setDisplayLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash2}`);
+		} else {
+			setDisplayText("Enter a token address!");
+		}
 	}
 
 	function handleInputChange(event) {
 		let inText = event.target.value;
-
-		// setDisplayText();
-
-		setInputValue(inText);
-		setDisplayText("Click Associate Button to Confirm");
+		setExecuteTextSt("Enter a Token Address to Associate");
+		if (inText === "") {
+			setInputValue();
+			setDisplayText();
+			setDisplayLinkSt();
+		} else {
+			setInputValue(inText);
+			setDisplayText("Click Associate Button to Confirm");
+			setDisplayLinkSt();
+		}
 	}
 	//=====================
 
 	return (
 		<div className="App">
 			<h1 className="header">Let's buidl a counter dapp with MetaMask and Hedera!</h1>
+
 			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
 
-			{/* <MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={contractTextSt} link={contractLinkSt} /> */}
+			<MyInput fcn={handleInputChange} text={executeTextSt} />
 
-			{/* <MyGroup fcn={contractExecute} buttonLabel={"Execute Contract (+1)"} text={executeTextSt} link={executeLinkSt} /> */}
-
-			<div>
-				<input
-					type="text"
-					value={inputValue}
-					onChange={handleInputChange}
-					placeholder="Enter token address..."
-					onFocus={handleInputChange}
-					onBlur={() => {
-						setDisplayText();
-					}}
-				/>
-				<p className="footer-text"> {displayText} </p>
-			</div>
-
-			<MyButton fcn={tokenAssociate} buttonLabel={"Associate Token"} />
+			<MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={displayText} link={displayLinkSt} />
 
 			<div className="logo">
 				<div className="symbol">

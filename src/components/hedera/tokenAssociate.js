@@ -13,6 +13,7 @@ async function tokenAssociateFcn(walletData, tokenAddress) {
 	// DEPLOY SMART CONTRACT
 	let contractAddress;
 	let txBlockHash;
+	let outText;
 	try {
 		const gasLimit = 4000000;
 
@@ -24,14 +25,15 @@ async function tokenAssociateFcn(walletData, tokenAddress) {
 		console.log(`- Contract deployed to address: \n${contractAddress} ✅`);
 
 		// EXECUTE CONTRACT FUNCTION
-		const myContractTx = await new ethers.Contract(contractAddress, abi, signer);
+		const myContractTx = new ethers.Contract(contractAddress, abi, signer);
 		const associateTx = await myContractTx.associateTokenFcn(tokenAddress, { gasLimit: gasLimit });
 		const associateRx = await associateTx.wait();
 		txBlockHash = associateRx.blockHash;
+		outText = "🔗Token association complete ✅";
 		console.log(`- Contract executed. Here's the block hash: \n${txBlockHash} ✅`);
 	} catch (associateError) {
 		console.log(`- ${associateError.message.toString()}`);
 	}
-	return txBlockHash;
+	return [txBlockHash, outText];
 }
 export default tokenAssociateFcn;
