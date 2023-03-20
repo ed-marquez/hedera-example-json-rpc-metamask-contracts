@@ -2,26 +2,22 @@
 pragma solidity >=0.5.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
+import "./HederaResponseCodes.sol";
+import "./IHederaTokenService.sol";
 import "./HederaTokenService.sol";
   
   contract AssociateToken is HederaTokenService{
+      event ResponseCode(int responseCode);
 
     function associateTokenFcn(address _tokenAddress) public {
-        // require(msg.value > 500000000, "Send more than 5 HBAR to claim your tokens!");
-        
-        // int64 tokenAmount = 100;
         address _receiver = msg.sender;
+        (int responseCode) = HederaTokenService.associateToken(_receiver, _tokenAddress);
 
-        HederaTokenService.associateToken(_receiver, _tokenAddress);
+        if (responseCode != HederaResponseCodes.SUCCESS) {
+            revert ();     
+        }
 
-        // (int responseCode2) =
-        // HederaTokenService.transferToken(fTokenAddress, address(this), receiver, tokenAmount);
-
-        // if (responseCode2 != HederaResponseCodes.SUCCESS) {
-        //     revert ();     
-        // }
-
-        // emit ResponseCode(responseCode2);
+        emit ResponseCode(responseCode);
     }
   }
     

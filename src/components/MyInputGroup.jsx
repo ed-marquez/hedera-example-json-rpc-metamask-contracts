@@ -1,6 +1,6 @@
 import React from "react";
 
-function MyInput(props) {
+function MyInputGroup(props) {
 	return (
 		<div>
 			<p className="sub-text"> {props.text} </p>
@@ -9,4 +9,4 @@ function MyInput(props) {
 	);
 }
 
-export default MyInput;
+export default MyInputGroup;

@@ -1,102 +1,82 @@
 import React, { useState } from "react";
 import MyGroup from "./components/MyGroup.jsx";
-import MyInput from "./components/MyInput.jsx";
+import MyInputGroup from "./components/MyInputGroup.jsx";
 import walletConnectFcn from "./components/hedera/walletConnect.js";
-import tokenAssociateFcn from "./components/hedera/tokenAssociate.js";
+import contractDeployFcn from "./components/hedera/contractDeploy.js";
+import contractExecuteFcn from "./components/hedera/contractExecute.js";
 import "./styles/App.css";
 
 function App() {
 	const [walletData, setWalletData] = useState();
-	const [accountId, setAccountId] = useState();
-	const [contractAddress, setContractAddress] = useState();
+	const [account, setAccount] = useState();
+	const [, setContractAddress] = useState();
 
 	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
-	const [contractTextSt, setContractTextSt] = useState();
-	const [executeTextSt, setExecuteTextSt] = useState("Enter a Token Address to Associate");
+	const [textboxTextSt, setTextboxTextSt] = useState("Enter a token address to associate");
+	const [tokenAddressIn, setTokenAddress] = useState("");
+	const [executeTextSt, setExecuteTextSt] = useState("");
 
 	const [connectLinkSt, setConnectLinkSt] = useState("");
-	const [contractLinkSt, setContractLinkSt] = useState();
-	const [executeLinkSt, setExecuteLinkSt] = useState();
+	const [executeLinkSt, setExecuteLinkSt] = useState("");
 
 	async function connectWallet() {
-		if (accountId !== undefined) {
-			setConnectTextSt(`🔌 Account ${accountId} already connected ⚡ ✅`);
+		if (account !== undefined) {
+			setConnectTextSt(`🔌 Account ${account} already connected ⚡ ✅`);
 		} else {
 			const wData = await walletConnectFcn();
 
-			let id = wData[0];
-			if (id !== undefined) {
-				setConnectTextSt(`🔌 Account ${id} connected ⚡ ✅`);
-				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${id}`);
-
-				setAccountId(id);
+			let newAccount = wData[0];
+			if (newAccount !== undefined) {
+				setConnectTextSt(`🔌 Account ${newAccount} connected ⚡ ✅`);
+				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${newAccount}`);
+				setAccount(newAccount);
 				setWalletData(wData);
-				setContractTextSt();
 			}
 		}
 	}
 
-	// async function contractDeploy() {
-	// 	if (accountId === undefined) {
-	// 		setContractTextSt("🛑 Connect a wallet first! 🛑");
-	// 	} else {
-	// 		const cAddress = await contractDeployFcn(walletData);
-
-	// 		if (cAddress === undefined) {
-	// 		} else {
-	// 			setContractAddress(cAddress);
-	// 			setContractTextSt(`Contract ${cAddress} deployed ✅`);
-	// 			setExecuteTextSt(``);
-	// 			setContractLinkSt(`https://hashscan.io/${walletData[2]}/account/${cAddress}`);
-	// 		}
-	// 	}
-	// }
-
-	// async function contractExecute() {
-	// 	if (contractAddress === undefined) {
-	// 		setExecuteTextSt("🛑 Deploy a contract first! 🛑");
-	// 	} else {
-	// 		const [txBlockHash, finalCount] = await contractExecuteFcn(walletData, contractAddress);
-
-	// 		if (txBlockHash === undefined || finalCount === undefined) {
-	// 		} else {
-	// 			setExecuteTextSt(`Count is: ${finalCount} | Transaction included in block ${txBlockHash} ✅`);
-	// 			setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
-	// 		}
-	// 	}
-	// }
-	//=====================
-	const [inputValue, setInputValue] = useState("");
-	const [displayText, setDisplayText] = useState("");
-	const [displayLinkSt, setDisplayLinkSt] = useState("");
+	function handleInputChange(event) {
+		let textIn = event.target.value;
+		setTextboxTextSt("Enter a token address to associate");
+		if (textIn === "") {
+			setTokenAddress();
+			setExecuteTextSt();
+			setExecuteLinkSt();
+		} else {
+			setTokenAddress(textIn);
+			setExecuteTextSt("Click to confirm 👇");
+			setExecuteLinkSt();
+		}
+	}
 
 	async function tokenAssociate() {
-		if (inputValue !== undefined) {
-			const txt = `Associating to Token: ${inputValue}`;
-			setDisplayText(txt);
+		if (account === undefined || tokenAddressIn === undefined) {
+			setExecuteTextSt("🛑Connect a wallet AND enter a valid token address!🛑");
+		}
+		//
+		else if (!tokenAddressIn.startsWith("0x")) {
+			setExecuteTextSt("🛑Enter a valid token address (0x...)🛑");
+		}
+		//
+		else {
+			setExecuteTextSt(`Associating to Token: ${tokenAddressIn}`);
 
-			const [txBlockHash2, outText] = await tokenAssociateFcn(walletData, inputValue);
-			setExecuteTextSt(outText);
-			setDisplayText(`Transaction included in block ${txBlockHash2} ✅`);
-			setDisplayLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash2}`);
-		} else {
-			setDisplayText("Enter a token address!");
+			const newContractAddress = await contractDeployFcn(walletData, tokenAddressIn);
+			setContractAddress(newContractAddress);
+			const [txBlockHash, outText] = await contractExecuteFcn(walletData, newContractAddress, tokenAddressIn);
+
+			if (txBlockHash !== undefined && outText !== undefined) {
+				setTextboxTextSt(outText);
+				setExecuteTextSt(`Transaction included in block ${txBlockHash} ✅`);
+				setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
+			} else {
+				setTextboxTextSt("Enter a token address to associate");
+				setExecuteTextSt(`Association failed - try again 🔴`);
+				setExecuteLinkSt("");
+			}
 		}
 	}
 
-	function handleInputChange(event) {
-		let inText = event.target.value;
-		setExecuteTextSt("Enter a Token Address to Associate");
-		if (inText === "") {
-			setInputValue();
-			setDisplayText();
-			setDisplayLinkSt();
-		} else {
-			setInputValue(inText);
-			setDisplayText("Click Associate Button to Confirm");
-			setDisplayLinkSt();
-		}
-	}
 	//=====================
 
 	return (
@@ -105,9 +85,9 @@ function App() {
 
 			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
 
-			<MyInput fcn={handleInputChange} text={executeTextSt} />
+			<MyInputGroup fcn={handleInputChange} text={textboxTextSt} />
 
-			<MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={displayText} link={displayLinkSt} />
+			<MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={executeTextSt} link={executeLinkSt} />
 
 			<div className="logo">
 				<div className="symbol">

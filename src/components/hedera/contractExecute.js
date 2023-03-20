@@ -1,12 +1,9 @@
 import abi from "../../contracts/abi.js";
-import axios from "axios";
 import { ethers } from "ethers";
 
-const delay = (ms) => new Promise((res) => setTimeout(res, ms));
-
-async function contractExecuteFcn(walletData, contractAddress) {
+async function contractExecuteFcn(walletData, contractAddress, tokenAddress) {
 	console.log(`\n=======================================`);
-	console.log(`- Executing the smart contract...🟠`);
+	console.log(`- Executing contract function (associateTokenFcn)...🟠`);
 
 	// ETHERS PROVIDER AND SIGNER
 	const provider = walletData[1];
@@ -14,41 +11,21 @@ async function contractExecuteFcn(walletData, contractAddress) {
 
 	// EXECUTE THE SMART CONTRACT
 	let txBlockHash;
-	let finalCount;
+	let outText;
 	try {
-		// CHECK SMART CONTRACT STATE
-		const initialCount = await getCountState();
-		console.log(`- Initial count: ${initialCount}`);
-
 		// EXECUTE CONTRACT FUNCTION
+		const gasLimit = 4000000;
 		const myContract = new ethers.Contract(contractAddress, abi, signer);
-		const incrementTx = await myContract.increment();
-		const incrementRx = await incrementTx.wait();
-		txBlockHash = incrementRx.blockHash;
-
-		// CHECK SMART CONTRACT STATE AGAIN
-		await delay(5000); // DELAY TO ALLOW MIRROR NODES TO UPDATE BEFORE QUERYING
-		finalCount = await getCountState();
-		console.log(`- Final count: ${finalCount}`);
+		const executeTx = await myContract.associateTokenFcn(tokenAddress, { gasLimit: gasLimit });
+		const executeRx = await executeTx.wait();
+		txBlockHash = executeRx.blockHash;
+		outText = "🔗Token association complete ✅";
 		console.log(`- Contract executed. Here's the block hash: \n${txBlockHash} ✅`);
 	} catch (executeError) {
 		console.log(`- ${executeError.message.toString()}`);
 	}
 
-	return [txBlockHash, finalCount];
-
-	async function getCountState() {
-		let countDec;
-		const countInfo = await axios.get(`https://${walletData[2]}.mirrornode.hedera.com/api/v1/contracts/${contractAddress}/state`);
-
-		if (countInfo.data.state[0] !== undefined) {
-			const countHex = countInfo.data.state[0].value;
-			countDec = parseInt(countHex, 16);
-		} else {
-			countDec = 0;
-		}
-		return countDec;
-	}
+	return [txBlockHash, outText];
 }
 
 export default contractExecuteFcn;
