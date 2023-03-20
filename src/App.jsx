@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import MyText from "./components/MyText.jsx";
+import MyButton from "./components/MyButton.jsx";
 import MyGroup from "./components/MyGroup.jsx";
-import MyInputGroup from "./components/MyInputGroup.jsx";
+import SetterGroup from "./components/SetterGroup.jsx";
+import GetterGroup from "./components/GetterGroup.jsx";
 import walletConnectFcn from "./components/hedera/walletConnect.js";
 import contractDeployFcn from "./components/hedera/contractDeploy.js";
 import contractExecuteFcn from "./components/hedera/contractExecute.js";
@@ -12,11 +15,13 @@ function App() {
 	const [, setContractAddress] = useState();
 
 	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
+	const [deployTextSt, setDeployTextSt] = useState("");
 	const [textboxTextSt, setTextboxTextSt] = useState("Enter a token address to associate");
 	const [tokenAddressIn, setTokenAddress] = useState("");
 	const [executeTextSt, setExecuteTextSt] = useState("");
 
 	const [connectLinkSt, setConnectLinkSt] = useState("");
+	const [deployLinkSt, setDeployLinkSt] = useState("");
 	const [executeLinkSt, setExecuteLinkSt] = useState("");
 
 	async function connectWallet() {
@@ -33,6 +38,11 @@ function App() {
 				setWalletData(wData);
 			}
 		}
+	}
+
+	async function contractDeploy() {
+		const newContractAddress = await contractDeployFcn(walletData);
+		setContractAddress(newContractAddress);
 	}
 
 	function handleInputChange(event) {
@@ -77,13 +87,31 @@ function App() {
 
 	return (
 		<div className="App">
-			<h1 className="header">Associate your Hedera account with native tokens using MetaMask!</h1>
+			<h1 className="header">Write and read on-chain data on Hedera!</h1>
 
 			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
 
-			<MyInputGroup fcn={handleInputChange} text={textboxTextSt} />
+			<MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={deployTextSt} link={deployLinkSt} />
 
-			<MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={executeTextSt} link={executeLinkSt} />
+			<SetterGroup
+				text={textboxTextSt}
+				fcnI1={console.log(`${1}`)}
+				phText1={"Part name"}
+				fcnI2={console.log(`${2}`)}
+				phText2={"Amount"}
+				fcnB1={console.log(`Pressed button`)}
+				buttonLabel={"Store Info"}
+			/>
+
+			<GetterGroup
+				text={textboxTextSt}
+				fcnI1={console.log(`${1}`)}
+				phText1={"Part name"}
+				fcnB1={console.log(`Pressed button`)}
+				buttonLabel={"Get Info"}
+			/>
+
+			{/* <MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={executeTextSt} link={executeLinkSt} /> */}
 
 			<div className="logo">
 				<div className="symbol">

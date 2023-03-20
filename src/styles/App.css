@@ -323,6 +323,15 @@ code {
 	color: #000000;
 }
 
+.multi-col-group {
+	display: flex;
+	flex-direction: row;
+	vertical-align: middle;
+	align-items: "center";
+	justify-content: center;
+	column-gap: 50px;
+}
+
 .cta-button:hover {
 	background-color: black;
 	color: white;
@@ -370,9 +379,11 @@ code {
 	display: block;
 	height: auto;
 }
+
 .logo .symbol svg path {
 	fill: white;
 }
+
 .logo .symbol svg path.h {
 	fill: black;
 }
@@ -416,6 +427,7 @@ code {
 		background-position: 0% 50%;
 	}
 }
+
 @-moz-keyframes gradient-animation {
 	0% {
 		background-position: 0% 50%;
@@ -427,6 +439,7 @@ code {
 		background-position: 0% 50%;
 	}
 }
+
 @keyframes gradient-animation {
 	0% {
 		background-position: 0% 50%;
