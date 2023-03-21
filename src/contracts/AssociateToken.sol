@@ -2,22 +2,14 @@
 pragma solidity >=0.5.0 <0.9.0;
 pragma experimental ABIEncoderV2;
 
-import "./HederaResponseCodes.sol";
-import "./IHederaTokenService.sol";
-import "./HederaTokenService.sol";
+import "https://github.com/hashgraph/hedera-smart-contracts/blob/main/contracts/hts-precompile/IHederaTokenService.sol";
   
-  contract AssociateToken is HederaTokenService{
-      event ResponseCode(int responseCode);
+  contract AssociateToken {
+    address htsPrecompiles = address(0x167);
 
-    function associateTokenFcn(address _tokenAddress) public {
+    constructor(address _tokenAddress) {
         address _receiver = msg.sender;
-        (int responseCode) = HederaTokenService.associateToken(_receiver, _tokenAddress);
-
-        if (responseCode != HederaResponseCodes.SUCCESS) {
-            revert ();     
-        }
-
-        emit ResponseCode(responseCode);
-    }
+        htsPrecompiles.call(abi.encodeWithSelector(IHederaTokenService.associateToken.selector,_receiver, _tokenAddress));
+    }  
   }
     
