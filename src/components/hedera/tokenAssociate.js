@@ -1,39 +1,30 @@
 import abi from "../../contracts/abi.js";
 import bytecode from "../../contracts/bytecode.js";
-import { ethers, ContractFactory } from "ethers";
+import { ContractFactory } from "ethers";
 
 async function tokenAssociateFcn(walletData, tokenAddress) {
 	console.log(`\n=======================================`);
-	console.log(`- Executing contract function...🟠`);
+	console.log(`- Associating token...🟠`);
 
 	// ETHERS PROVIDER AND SIGNER
 	const provider = walletData[1];
 	const signer = provider.getSigner();
 
 	// DEPLOY SMART CONTRACT
-	let contractAddress;
-	let txBlockHash;
+	let txHash;
 	let outText;
 	try {
 		const gasLimit = 4000000;
 
-		// DEPLOY CONTRACT
 		const myContract = new ContractFactory(abi, bytecode, signer);
-		const contractDeployTx = await myContract.deploy({ gasLimit: gasLimit });
+		const contractDeployTx = await myContract.deploy(tokenAddress, { gasLimit: gasLimit });
 		const contractDeployRx = await contractDeployTx.deployTransaction.wait();
-		contractAddress = contractDeployRx.contractAddress;
-		console.log(`- Contract deployed to address: \n${contractAddress} ✅`);
-
-		// EXECUTE CONTRACT FUNCTION
-		const myContractTx = new ethers.Contract(contractAddress, abi, signer);
-		const associateTx = await myContractTx.associateTokenFcn(tokenAddress, { gasLimit: gasLimit });
-		const associateRx = await associateTx.wait();
-		txBlockHash = associateRx.blockHash;
+		txHash = contractDeployRx.transactionHash;
 		outText = "🔗Token association complete ✅";
-		console.log(`- Contract executed. Here's the block hash: \n${txBlockHash} ✅`);
-	} catch (associateError) {
-		console.log(`- ${associateError.message.toString()}`);
+		console.log(`- Done! Here's the transaction hash: \n${txHash} ✅`);
+	} catch (deployError) {
+		console.log(`- ${deployError.message.toString()}`);
 	}
-	return [txBlockHash, outText];
+	return [txHash, outText];
 }
 export default tokenAssociateFcn;

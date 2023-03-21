@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import MyGroup from "./components/MyGroup.jsx";
 import MyInputGroup from "./components/MyInputGroup.jsx";
 import walletConnectFcn from "./components/hedera/walletConnect.js";
-import contractDeployFcn from "./components/hedera/contractDeploy.js";
-import contractExecuteFcn from "./components/hedera/contractExecute.js";
+import tokenAssociateFcn from "./components/hedera/tokenAssociate.js";
 import "./styles/App.css";
 
 function App() {
 	const [walletData, setWalletData] = useState();
 	const [account, setAccount] = useState();
-	const [, setContractAddress] = useState();
+	const [network, setNetwork] = useState();
 
 	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
 	const [textboxTextSt, setTextboxTextSt] = useState("Enter a token address to associate");
@@ -26,11 +25,13 @@ function App() {
 			const wData = await walletConnectFcn();
 
 			let newAccount = wData[0];
+			let newNetwork = wData[2];
 			if (newAccount !== undefined) {
 				setConnectTextSt(`🔌 Account ${newAccount} connected ⚡ ✅`);
-				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${newAccount}`);
-				setAccount(newAccount);
+				setConnectLinkSt(`https://hashscan.io/${newNetwork}/account/${newAccount}`);
 				setWalletData(wData);
+				setAccount(newAccount);
+				setNetwork(newNetwork);
 			}
 		}
 	}
@@ -57,14 +58,12 @@ function App() {
 		} else {
 			setExecuteTextSt(`Associating to Token: ${tokenAddressIn}`);
 
-			const newContractAddress = await contractDeployFcn(walletData, tokenAddressIn);
-			setContractAddress(newContractAddress);
-			const [txBlockHash, outText] = await contractExecuteFcn(walletData, newContractAddress, tokenAddressIn);
+			const [txHash, outText] = await tokenAssociateFcn(walletData, tokenAddressIn);
 
-			if (txBlockHash !== undefined && outText !== undefined) {
+			if (txHash !== undefined && outText !== undefined) {
 				setTextboxTextSt(outText);
-				setExecuteTextSt(`Transaction included in block ${txBlockHash} ✅`);
-				setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
+				setExecuteTextSt(`Done! Transaction Hash: ${txHash} ✅`);
+				setExecuteLinkSt(`https://hashscan.io/${network}/tx/${txHash}`);
 			} else {
 				setTextboxTextSt("Enter a token address to associate");
 				setExecuteTextSt(`Association failed - try again 🔴`);
