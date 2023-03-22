@@ -6,11 +6,11 @@ import MyText from "./MyText";
 function SetterGroup(props) {
 	return (
 		<div>
-			<MyText text={props.text} link={props.link} />
+			<MyText text={props.text_app} link={props.link_app} />
 			<div className="multi-col-group">
-				<MyInputBox fcn={props.fcnI1} phText={props.phText1} />
-				<MyInputBox fcn={props.fcnI2} phText={props.phText2} />
-				<MyButton fcn={props.fcnB1} buttonLabel={props.buttonLabel} />
+				<MyInputBox fcn={props.fcnI1_app} placeholderTxt={props.placeholderTxt1_app} />
+				<MyInputBox fcn={props.fcnI2_app} placeholderTxt={props.placeholderTxt2_app} />
+				<MyButton fcn={props.fcnB1_app} buttonLabel={props.buttonLabel_app} />
 			</div>
 		</div>
 	);

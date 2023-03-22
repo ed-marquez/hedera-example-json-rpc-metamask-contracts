@@ -4,184 +4,67 @@ const abi = [
 		inputs: [
 			{
 				indexed: false,
-				internalType: "bool",
-				name: "",
-				type: "bool",
-			},
-			{
-				indexed: false,
-				internalType: "bytes",
-				name: "",
-				type: "bytes",
+				internalType: "uint256",
+				name: "amountOf",
+				type: "uint256",
 			},
 		],
-		name: "CallResponseEvent",
+		name: "gotAmountOf",
 		type: "event",
 	},
 	{
 		inputs: [
 			{
-				internalType: "address",
-				name: "_tokenAddress",
-				type: "address",
+				internalType: "string",
+				name: "_name",
+				type: "string",
 			},
 		],
-		name: "associateTokenFcn",
+		name: "getAmount",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256",
+			},
+		],
+		stateMutability: "nonpayable",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
+				internalType: "string",
+				name: "",
+				type: "string",
+			},
+		],
+		name: "myInventory",
+		outputs: [
+			{
+				internalType: "uint256",
+				name: "",
+				type: "uint256",
+			},
+		],
+		stateMutability: "view",
+		type: "function",
+	},
+	{
+		inputs: [
+			{
+				internalType: "string",
+				name: "_name",
+				type: "string",
+			},
+			{
+				internalType: "uint256",
+				name: "_amount",
+				type: "uint256",
+			},
+		],
+		name: "setNameNAmount",
 		outputs: [],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "token",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "from",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "to",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256",
-			},
-		],
-		name: "delegateTransferFrom",
-		outputs: [
-			{
-				internalType: "int64",
-				name: "responseCode",
-				type: "int64",
-			},
-		],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "token",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "from",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "to",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "serialNumber",
-				type: "uint256",
-			},
-		],
-		name: "delegateTransferFromNFT",
-		outputs: [
-			{
-				internalType: "int64",
-				name: "responseCode",
-				type: "int64",
-			},
-		],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "token",
-				type: "address",
-			},
-			{
-				internalType: "bytes",
-				name: "encodedFunctionSelector",
-				type: "bytes",
-			},
-		],
-		name: "redirectForToken",
-		outputs: [],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "token",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "from",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "to",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "amount",
-				type: "uint256",
-			},
-		],
-		name: "transferFrom",
-		outputs: [
-			{
-				internalType: "int64",
-				name: "responseCode",
-				type: "int64",
-			},
-		],
-		stateMutability: "nonpayable",
-		type: "function",
-	},
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "token",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "from",
-				type: "address",
-			},
-			{
-				internalType: "address",
-				name: "to",
-				type: "address",
-			},
-			{
-				internalType: "uint256",
-				name: "serialNumber",
-				type: "uint256",
-			},
-		],
-		name: "transferFromNFT",
-		outputs: [
-			{
-				internalType: "int64",
-				name: "responseCode",
-				type: "int64",
-			},
-		],
 		stateMutability: "nonpayable",
 		type: "function",
 	},

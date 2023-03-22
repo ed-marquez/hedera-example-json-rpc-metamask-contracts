@@ -1,86 +1,131 @@
 import React, { useState } from "react";
 import MyText from "./components/MyText.jsx";
-import MyButton from "./components/MyButton.jsx";
 import MyGroup from "./components/MyGroup.jsx";
 import SetterGroup from "./components/SetterGroup.jsx";
 import GetterGroup from "./components/GetterGroup.jsx";
 import walletConnectFcn from "./components/hedera/walletConnect.js";
 import contractDeployFcn from "./components/hedera/contractDeploy.js";
 import contractExecuteFcn from "./components/hedera/contractExecute.js";
+import contractCallViewFcn from "./components/hedera/contractCallView.js";
 import "./styles/App.css";
 
 function App() {
 	const [walletData, setWalletData] = useState();
 	const [account, setAccount] = useState();
-	const [, setContractAddress] = useState();
+	const [network, setNetwork] = useState();
+	const [contract, setContract] = useState();
+	const [sPartName, set_sPartName] = useState();
+	const [sPartAmount, set_sPartAmount] = useState();
+	const [gPartName, set_gPartName] = useState();
 
-	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
-	const [deployTextSt, setDeployTextSt] = useState("");
-	const [textboxTextSt, setTextboxTextSt] = useState("Enter a token address to associate");
-	const [tokenAddressIn, setTokenAddress] = useState("");
-	const [executeTextSt, setExecuteTextSt] = useState("");
+	const [connectText, setConnectText] = useState("🔌 Connect here...");
+	const [deployText, setDeployText] = useState("");
+	const [setterGroupText, setSetterGroupText] = useState("Store a part name and corresponding amount on-chain");
+	const [getterGroupText, setGetterGroupText] = useState("Check amount available for a given part");
+	const [amountText, setAmountText] = useState("");
 
-	const [connectLinkSt, setConnectLinkSt] = useState("");
-	const [deployLinkSt, setDeployLinkSt] = useState("");
-	const [executeLinkSt, setExecuteLinkSt] = useState("");
+	const [connectLink, setConnectLink] = useState("");
+	const [deployLink, setDeployLink] = useState("");
+	const [setterGroupLink, set_setterGroupLink] = useState("");
+	const [amountLink, setAmountLink] = useState("");
 
 	async function connectWallet() {
 		if (account !== undefined) {
-			setConnectTextSt(`🔌 Account ${account} already connected ⚡ ✅`);
+			setConnectText(`🔌 Account ${account} already connected ⚡ ✅`);
 		} else {
 			const wData = await walletConnectFcn();
 
 			let newAccount = wData[0];
+			let newNetwork = wData[2];
 			if (newAccount !== undefined) {
-				setConnectTextSt(`🔌 Account ${newAccount} connected ⚡ ✅`);
-				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${newAccount}`);
-				setAccount(newAccount);
+				setConnectText(`🔌 Account ${newAccount} connected ⚡ ✅`);
+				setConnectLink(`https://hashscan.io/${newNetwork}/account/${newAccount}`);
 				setWalletData(wData);
+				setAccount(newAccount);
+				setNetwork(newNetwork);
+				setDeployText();
 			}
 		}
 	}
 
 	async function contractDeploy() {
-		const newContractAddress = await contractDeployFcn(walletData);
-		setContractAddress(newContractAddress);
-	}
-
-	function handleInputChange(event) {
-		let textIn = event.target.value;
-		setTextboxTextSt("Enter a token address to associate");
-		if (textIn === "") {
-			setTokenAddress();
-			setExecuteTextSt();
-			setExecuteLinkSt();
+		if (account === undefined) {
+			setDeployText("🛑Connect a wallet first!🛑");
+		} else if (contract !== undefined) {
+			setDeployText(`You already have contract ${contract} ✅`);
 		} else {
-			setTokenAddress(textIn);
-			setExecuteTextSt("Click to confirm 👇");
-			setExecuteLinkSt();
+			const newContractAddress = await contractDeployFcn(walletData);
+			setContract(newContractAddress);
+			setDeployText(`Deployed contrat ${newContractAddress} ✅`);
+			setDeployLink(`https://hashscan.io/${network}/address/${newContractAddress}`);
+			setSetterGroupText("Store a part name and corresponding amount on-chain");
 		}
 	}
 
-	async function tokenAssociate() {
-		if (account === undefined || tokenAddressIn === undefined) {
-			setExecuteTextSt("🛑Connect a wallet AND enter a valid token address!🛑");
-		} else if (!tokenAddressIn.startsWith("0x")) {
-			setExecuteTextSt("🛑Enter a valid token address (0x...)🛑");
+	function handle_sPartNameChange(event) {
+		let new_sPartName = event.target.value;
+		if (new_sPartName === "") {
+			set_sPartName();
 		} else {
-			setExecuteTextSt(`Associating to Token: ${tokenAddressIn}`);
+			set_sPartName(new_sPartName);
+		}
+	}
+	function handle_sPartAmountChange(event) {
+		let new_sPartAmount = event.target.value;
+		if (new_sPartAmount === "") {
+			set_sPartAmount();
+		} else {
+			set_sPartAmount(new_sPartAmount);
+		}
+	}
+	function handle_gPartNameChange(event) {
+		let new_gPartName = event.target.value;
+		if (new_gPartName === "") {
+			set_gPartName();
+		} else {
+			set_gPartName(new_gPartName);
+		}
+	}
 
-			const newContractAddress = await contractDeployFcn(walletData, tokenAddressIn);
-			setContractAddress(newContractAddress);
-			const [txBlockHash, outText] = await contractExecuteFcn(walletData, newContractAddress, tokenAddressIn);
+	async function contractExecute() {
+		if (account === undefined || contract === undefined) {
+			setSetterGroupText("🛑Connect a wallet AND deploy a contract!🛑");
+		} else if (sPartName === undefined || sPartAmount === undefined) {
+			setSetterGroupText("🛑Enter a valid part name and address!🛑");
+		} else {
+			setSetterGroupText(`Storing ${sPartAmount} unit(s) of ${sPartName} on-chain...`);
 
-			if (txBlockHash !== undefined && outText !== undefined) {
-				setTextboxTextSt(outText);
-				setExecuteTextSt(`Transaction included in block ${txBlockHash} ✅`);
-				setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
+			const [txHash, outText] = await contractExecuteFcn(walletData, contract, [sPartName, sPartAmount]);
+
+			if (txHash !== undefined && outText !== undefined) {
+				setSetterGroupText(`${outText} | Store a new part name and corresponding amount!`);
+				set_setterGroupLink(`https://hashscan.io/${network}/tx/${txHash}`);
 			} else {
-				setTextboxTextSt("Enter a token address to associate");
-				setExecuteTextSt(`Association failed - try again 🔴`);
-				setExecuteLinkSt("");
+				setSetterGroupText(`Transaction failed - try again 🔴`);
 			}
 		}
+	}
+
+	async function contractCallView() {
+		if (gPartName === undefined) {
+			setGetterGroupText("🛑Enter a valid part name to check the amount!🛑");
+		} else {
+			setGetterGroupText(`Getting current amount of ${gPartName} from contract...`);
+
+			const [txHash, outText] = await contractCallViewFcn(walletData, contract, gPartName);
+
+			if (txHash !== undefined && outText !== undefined) {
+				setGetterGroupText("Check amount available for a given part");
+				setAmountText(`${outText} | ${10} units of ${gPartName} are available`);
+				setAmountLink(`https://hashscan.io/${network}/tx/${txHash}`);
+			} else {
+				setGetterGroupText(`Transaction failed - try again 🔴`);
+			}
+		}
+	}
+
+	async function testerDisp() {
+		console.log(`- Test show: ${1}\n`);
 	}
 
 	//=====================
@@ -89,29 +134,35 @@ function App() {
 		<div className="App">
 			<h1 className="header">Write and read on-chain data on Hedera!</h1>
 
-			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
+			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectText} link={connectLink} />
 
-			<MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={deployTextSt} link={deployLinkSt} />
+			<MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={deployText} link={deployLink} />
 
 			<SetterGroup
-				text={textboxTextSt}
-				fcnI1={console.log(`${1}`)}
-				phText1={"Part name"}
-				fcnI2={console.log(`${2}`)}
-				phText2={"Amount"}
-				fcnB1={console.log(`Pressed button`)}
-				buttonLabel={"Store Info"}
+				text_app={setterGroupText}
+				link_app={setterGroupLink}
+				//
+				fcnI1_app={handle_sPartNameChange}
+				placeholderTxt1_app={"Part name"}
+				//
+				fcnI2_app={handle_sPartAmountChange}
+				placeholderTxt2_app={"Amount"}
+				//
+				fcnB1_app={contractExecute}
+				buttonLabel_app={"Store Info"}
 			/>
 
 			<GetterGroup
-				text={textboxTextSt}
-				fcnI1={console.log(`${1}`)}
-				phText1={"Part name"}
-				fcnB1={console.log(`Pressed button`)}
-				buttonLabel={"Get Info"}
+				text_app={getterGroupText}
+				//
+				fcnI1_app={handle_gPartNameChange}
+				placeholderTxt1_app={"Part name"}
+				//
+				fcnB1_app={contractCallView}
+				buttonLabel_app={"Get Info"}
 			/>
 
-			{/* <MyGroup fcn={tokenAssociate} buttonLabel={"Associate Token"} text={executeTextSt} link={executeLinkSt} /> */}
+			<MyText text={amountText} link={amountLink} />
 
 			<div className="logo">
 				<div className="symbol">
