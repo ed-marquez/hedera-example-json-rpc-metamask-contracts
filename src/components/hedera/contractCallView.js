@@ -1,7 +1,7 @@
 import abi from "../../contracts/abi.js";
 import { ethers } from "ethers";
 
-async function contractExecuteFcn(walletData, contractAddress, partName) {
+async function contractExecuteFcn(walletData, network, contractAddress, partName) {
 	console.log(`\n=======================================`);
 	console.log(`- Calling contract function (Getting info)...🟠`);
 
@@ -10,27 +10,21 @@ async function contractExecuteFcn(walletData, contractAddress, partName) {
 	const signer = provider.getSigner();
 
 	// EXECUTE THE SMART CONTRACT
-	let txHash;
 	let outText;
 	try {
 		// EXECUTE CONTRACT FUNCTION
-		const gasLimit = 4000000;
+		const gasLimit = 0;
 		const myContract = new ethers.Contract(contractAddress, abi, signer);
 		const callTx = await myContract.getAmount(partName, { gasLimit: gasLimit });
-		const callRx = await callTx.wait();
-		txHash = callRx.transactionHash;
-		outText = "🔍Transaction complete ✅";
-		console.log(`- Contract executed. Here's the transaction hash: \n${txHash} ✅`);
+		const callResult = callTx.toString();
 
-		// myContract.on("gotAmountOf", (amountOf) => {
-		// 	console.log(`${amountOf}`);
-		// 	// console.log(parseInt(amountOf.hex, 16));
-		// });
+		outText = `Call complete ✅ | ${callResult} unit(s) of ${partName} are available`;
+		console.log(`- Contract called ✅`);
 	} catch (executeError) {
 		console.log(`- ${executeError.message.toString()}`);
 	}
 
-	return [txHash, outText];
+	return outText;
 }
 
 export default contractExecuteFcn;

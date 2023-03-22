@@ -27,7 +27,6 @@ function App() {
 	const [connectLink, setConnectLink] = useState("");
 	const [deployLink, setDeployLink] = useState("");
 	const [setterGroupLink, set_setterGroupLink] = useState("");
-	const [amountLink, setAmountLink] = useState("");
 
 	async function connectWallet() {
 		if (account !== undefined) {
@@ -56,7 +55,7 @@ function App() {
 		} else {
 			const newContractAddress = await contractDeployFcn(walletData);
 			setContract(newContractAddress);
-			setDeployText(`Deployed contrat ${newContractAddress} ✅`);
+			setDeployText(`Deployed contract ${newContractAddress} ✅`);
 			setDeployLink(`https://hashscan.io/${network}/address/${newContractAddress}`);
 			setSetterGroupText("Store a part name and corresponding amount on-chain");
 		}
@@ -112,20 +111,15 @@ function App() {
 		} else {
 			setGetterGroupText(`Getting current amount of ${gPartName} from contract...`);
 
-			const [txHash, outText] = await contractCallViewFcn(walletData, contract, gPartName);
+			const outText = await contractCallViewFcn(walletData, network, contract, gPartName);
 
-			if (txHash !== undefined && outText !== undefined) {
+			if (outText !== undefined) {
 				setGetterGroupText("Check amount available for a given part");
-				setAmountText(`${outText} | ${10} units of ${gPartName} are available`);
-				setAmountLink(`https://hashscan.io/${network}/tx/${txHash}`);
+				setAmountText(outText);
 			} else {
 				setGetterGroupText(`Transaction failed - try again 🔴`);
 			}
 		}
-	}
-
-	async function testerDisp() {
-		console.log(`- Test show: ${1}\n`);
 	}
 
 	//=====================
@@ -162,7 +156,7 @@ function App() {
 				buttonLabel_app={"Get Info"}
 			/>
 
-			<MyText text={amountText} link={amountLink} />
+			<MyText text={amountText} />
 
 			<div className="logo">
 				<div className="symbol">

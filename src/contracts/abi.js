@@ -1,18 +1,5 @@
 const abi = [
 	{
-		anonymous: false,
-		inputs: [
-			{
-				indexed: false,
-				internalType: "uint256",
-				name: "amountOf",
-				type: "uint256",
-			},
-		],
-		name: "gotAmountOf",
-		type: "event",
-	},
-	{
 		inputs: [
 			{
 				internalType: "string",
@@ -28,7 +15,7 @@ const abi = [
 				type: "uint256",
 			},
 		],
-		stateMutability: "nonpayable",
+		stateMutability: "view",
 		type: "function",
 	},
 	{
