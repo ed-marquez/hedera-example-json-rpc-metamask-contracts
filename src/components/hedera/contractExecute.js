@@ -13,7 +13,7 @@ async function contractExecuteFcn(walletData, contractAddress) {
 	const signer = provider.getSigner();
 
 	// EXECUTE THE SMART CONTRACT
-	let txBlockHash;
+	let txHash;
 	let finalCount;
 	try {
 		// CHECK SMART CONTRACT STATE
@@ -24,18 +24,18 @@ async function contractExecuteFcn(walletData, contractAddress) {
 		const myContract = new ethers.Contract(contractAddress, abi, signer);
 		const incrementTx = await myContract.increment();
 		const incrementRx = await incrementTx.wait();
-		txBlockHash = incrementRx.blockHash;
+		txHash = incrementRx.transactionHash;
 
 		// CHECK SMART CONTRACT STATE AGAIN
 		await delay(5000); // DELAY TO ALLOW MIRROR NODES TO UPDATE BEFORE QUERYING
 		finalCount = await getCountState();
 		console.log(`- Final count: ${finalCount}`);
-		console.log(`- Contract executed. Here's the block hash: \n${txBlockHash} ✅`);
+		console.log(`- Contract executed. Transaction hash: \n${txHash} ✅`);
 	} catch (executeError) {
 		console.log(`- ${executeError.message.toString()}`);
 	}
 
-	return [txBlockHash, finalCount];
+	return [txHash, finalCount];
 
 	async function getCountState() {
 		let countDec;

@@ -7,7 +7,8 @@ import "./styles/App.css";
 
 function App() {
 	const [walletData, setWalletData] = useState();
-	const [accountId, setAccountId] = useState();
+	const [account, setAccount] = useState();
+	const [network, setNetwork] = useState();
 	const [contractAddress, setContractAddress] = useState();
 
 	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
@@ -19,25 +20,27 @@ function App() {
 	const [executeLinkSt, setExecuteLinkSt] = useState();
 
 	async function connectWallet() {
-		if (accountId !== undefined) {
-			setConnectTextSt(`🔌 Account ${accountId} already connected ⚡ ✅`);
+		if (account !== undefined) {
+			setConnectTextSt(`🔌 Account ${account} already connected ⚡ ✅`);
 		} else {
 			const wData = await walletConnectFcn();
 
-			let id = wData[0];
-			if (id !== undefined) {
-				setConnectTextSt(`🔌 Account ${id} connected ⚡ ✅`);
-				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${id}`);
+			let newAccount = wData[0];
+			let newNetwork = wData[2];
+			if (newAccount !== undefined) {
+				setConnectTextSt(`🔌 Account ${newAccount} connected ⚡ ✅`);
+				setConnectLinkSt(`https://hashscan.io/${newNetwork}/account/${newAccount}`);
 
-				setAccountId(id);
 				setWalletData(wData);
+				setAccount(newAccount);
+				setNetwork(newNetwork);
 				setContractTextSt();
 			}
 		}
 	}
 
 	async function contractDeploy() {
-		if (accountId === undefined) {
+		if (account === undefined) {
 			setContractTextSt("🛑 Connect a wallet first! 🛑");
 		} else {
 			const cAddress = await contractDeployFcn(walletData);
@@ -47,7 +50,7 @@ function App() {
 				setContractAddress(cAddress);
 				setContractTextSt(`Contract ${cAddress} deployed ✅`);
 				setExecuteTextSt(``);
-				setContractLinkSt(`https://hashscan.io/${walletData[2]}/account/${cAddress}`);
+				setContractLinkSt(`https://hashscan.io/${network}/address/${cAddress}`);
 			}
 		}
 	}
@@ -56,12 +59,12 @@ function App() {
 		if (contractAddress === undefined) {
 			setExecuteTextSt("🛑 Deploy a contract first! 🛑");
 		} else {
-			const [txBlockHash, finalCount] = await contractExecuteFcn(walletData, contractAddress);
+			const [txHash, finalCount] = await contractExecuteFcn(walletData, contractAddress);
 
-			if (txBlockHash === undefined || finalCount === undefined) {
+			if (txHash === undefined || finalCount === undefined) {
 			} else {
-				setExecuteTextSt(`Count is: ${finalCount} | Transaction included in block ${txBlockHash} ✅`);
-				setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
+				setExecuteTextSt(`Count is: ${finalCount} | Transaction hash: ${txHash} ✅`);
+				setExecuteLinkSt(`https://hashscan.io/${network}/tx/${txHash}`);
 			}
 		}
 	}
@@ -74,6 +77,7 @@ function App() {
 			<MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={contractTextSt} link={contractLinkSt} />
 
 			<MyGroup fcn={contractExecute} buttonLabel={"Execute Contract (+1)"} text={executeTextSt} link={executeLinkSt} />
+
 			<div className="logo">
 				<div className="symbol">
 					<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
