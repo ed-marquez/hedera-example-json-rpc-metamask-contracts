@@ -1,88 +1,89 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
-import Button from "./Button";
-import Modal from "./Modal";
-import { ButtonProvider } from "./ButtonContext";
+import React, { useState } from "react";
+import MyGroup from "./components/MyGroup.jsx";
+import walletConnectFcn from "./components/hedera/walletConnect.js";
+import contractDeployFcn from "./components/hedera/contractDeploy.js";
+import contractExecuteFcn from "./components/hedera/contractExecute.js";
 import "./styles/App.css";
 
 function App() {
-	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [isWalletConnected, setIsWalletConnected] = useState(false);
+	const [walletData, setWalletData] = useState();
+	const [accountId, setAccountId] = useState();
+	const [contractAddress, setContractAddress] = useState();
 
-	const connectWallet = useCallback(() => {
-		setIsWalletConnected(true);
-	}, []);
+	const [connectTextSt, setConnectTextSt] = useState("🔌 Connect here...");
+	const [contractTextSt, setContractTextSt] = useState();
+	const [executeTextSt, setExecuteTextSt] = useState();
 
-	const disconnectWallet = useCallback(() => {
-		setIsWalletConnected(false);
-	}, []);
+	const [connectLinkSt, setConnectLinkSt] = useState("");
+	const [contractLinkSt, setContractLinkSt] = useState();
+	const [executeLinkSt, setExecuteLinkSt] = useState();
 
-	function onConnectWallet() {
-		setIsModalOpen(true);
-		console.log("Connecting wallet...");
-	}
+	async function connectWallet() {
+		if (accountId !== undefined) {
+			setConnectTextSt(`🔌 Account ${accountId} already connected ⚡ ✅`);
+		} else {
+			const wData = await walletConnectFcn();
 
-	function hideModal() {
-		setIsModalOpen(false);
-	}
+			let id = wData[0];
+			if (id !== undefined) {
+				setConnectTextSt(`🔌 Account ${id} connected ⚡ ✅`);
+				setConnectLinkSt(`https://hashscan.io/${wData[2]}/account/${id}`);
 
-	function onButtonClick() {
-		connectWallet();
-		hideModal();
-		console.log("Connected");
-	}
-
-	function executeMyFunction() {
-		console.log("My Function executed");
-		console.log(`- Value: ${isWalletConnected}`);
-	}
-
-	function onDisconnectWallet() {
-		disconnectWallet();
-	}
-
-	// Restore wallet connection state from local storage on component mount
-	useEffect(() => {
-		const storedWalletState = localStorage.getItem("isWalletConnected");
-		if (storedWalletState === "true") {
-			connectWallet();
+				setAccountId(id);
+				setWalletData(wData);
+				setContractTextSt();
+			}
 		}
-	}, [connectWallet]);
+	}
 
-	// Store wallet connection state in local storage whenever it changes
-	useEffect(() => {
-		localStorage.setItem("isWalletConnected", isWalletConnected.toString());
-	}, [isWalletConnected]);
+	async function contractDeploy() {
+		if (accountId === undefined) {
+			setContractTextSt("🛑 Connect a wallet first! 🛑");
+		} else {
+			const cAddress = await contractDeployFcn(walletData);
+
+			if (cAddress === undefined) {
+			} else {
+				setContractAddress(cAddress);
+				setContractTextSt(`Contract ${cAddress} deployed ✅`);
+				setExecuteTextSt(``);
+				setContractLinkSt(`https://hashscan.io/${walletData[2]}/account/${cAddress}`);
+			}
+		}
+	}
+
+	async function contractExecute() {
+		if (contractAddress === undefined) {
+			setExecuteTextSt("🛑 Deploy a contract first! 🛑");
+		} else {
+			const [txBlockHash, finalCount] = await contractExecuteFcn(walletData, contractAddress);
+
+			if (txBlockHash === undefined || finalCount === undefined) {
+			} else {
+				setExecuteTextSt(`Count is: ${finalCount} | Transaction included in block ${txBlockHash} ✅`);
+				setExecuteLinkSt(`https://hashscan.io/${walletData[2]}/block/${txBlockHash}`);
+			}
+		}
+	}
 
 	return (
-		<ButtonProvider value={useContext}>
-			<div>
-				{!isWalletConnected && (
-					<Button onClick={onConnectWallet} buttonType="initial">
-						Connect Wallet
-					</Button>
-				)}
+		<div className="App">
+			<h1 className="header">Let's buidl a counter dapp with MetaMask and Hedera!</h1>
+			<MyGroup fcn={connectWallet} buttonLabel={"Connect Wallet"} text={connectTextSt} link={connectLinkSt} />
 
-				{isWalletConnected && (
-					<>
-						<Button onClick={onDisconnectWallet} buttonType="topRight">
-							Disconnect Wallet
-						</Button>
+			<MyGroup fcn={contractDeploy} buttonLabel={"Deploy Contract"} text={contractTextSt} link={contractLinkSt} />
 
-						<Button onClick={executeMyFunction} buttonType="middle">
-							My Function
-						</Button>
-					</>
-				)}
-
-				<Modal isOpen={isModalOpen} onClose={hideModal}>
-					<h2>Modal Title</h2>
-					<Button onClick={onButtonClick}>Button 1</Button>
-					<Button onClick={onButtonClick}>Button 2</Button>
-					<Button onClick={onButtonClick}>Button 3</Button>
-				</Modal>
+			<MyGroup fcn={contractExecute} buttonLabel={"Execute Contract (+1)"} text={executeTextSt} link={executeLinkSt} />
+			<div className="logo">
+				<div className="symbol">
+					<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
+						<path d="M20 0a20 20 0 1 0 20 20A20 20 0 0 0 20 0" className="circle"></path>
+						<path d="M28.13 28.65h-2.54v-5.4H14.41v5.4h-2.54V11.14h2.54v5.27h11.18v-5.27h2.54zm-13.6-7.42h11.18v-2.79H14.53z" className="h"></path>
+					</svg>
+				</div>
+				<span>Hedera</span>
 			</div>
-		</ButtonProvider>
+		</div>
 	);
 }
-
 export default App;
