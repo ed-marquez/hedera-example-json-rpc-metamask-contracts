@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-const network = "previewnet";
+const network = "testnet";
 
 async function walletConnectFcn() {
 	console.log(`\n=======================================`);
