@@ -1,14 +1,2 @@
-const abi = [
-	{
-		inputs: [
-			{
-				internalType: "address",
-				name: "_tokenAddress",
-				type: "address",
-			},
-		],
-		stateMutability: "nonpayable",
-		type: "constructor",
-	},
-];
+const abi = [`function associate()`, `function dissociate()`];
 export default abi;

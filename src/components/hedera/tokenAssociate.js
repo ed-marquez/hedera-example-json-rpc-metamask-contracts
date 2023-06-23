@@ -1,6 +1,5 @@
-// import abi from "../../contracts/abi.js";
-import bytecode from "../../contracts/bytecode.js";
 import { ethers } from "ethers";
+import abi from "../../contracts/abi.js";
 
 async function tokenAssociateFcn(walletData, tokenAddress) {
 	console.log(`\n=======================================`);
@@ -10,17 +9,15 @@ async function tokenAssociateFcn(walletData, tokenAddress) {
 	const provider = walletData[1];
 	const signer = provider.getSigner();
 
-	const abi = [`function associate()`];
-
-	// DEPLOY SMART CONTRACT
+	// EXECUTE FUNCTION BY CALLING HTS TOKEN AS A CONTRACT INSTANCE
 	let txHash;
 	let outText;
 	try {
-		const gasLimit = 4000000;
+		const gasLimit = 1000000;
 
-		// create contract instance for the contract id (token id)
+		// CREATE CONTRACT INSTANCE FOR THE TOKEN ADDRESS
 		const myContract = new ethers.Contract(tokenAddress, abi, signer);
-		const associateTx = await myContract.associate();
+		const associateTx = await myContract.associate({ gasLimit: gasLimit });
 		const associateRx = await associateTx.wait();
 		txHash = associateRx.transactionHash;
 		outText = "🔗Token association complete ✅";
